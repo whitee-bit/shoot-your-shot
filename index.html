@@ -70,7 +70,6 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 .trans-blank-in{flex:1;border:none;border-bottom:1.5px solid rgba(0,0,0,0.2);border-radius:0;padding:4px 6px;font-family:'Nunito',sans-serif;font-size:14px;color:#1a1a1a;background:transparent;outline:none;}
 .trans-blank-in:focus{border-bottom-color:#185FA5;}
 .trans-blank-st{font-size:13px;min-width:16px;}
-.trans-divider{height:0.5px;background:rgba(0,0,0,0.08);margin:8px 12px 0;}
 .smm-block{padding:4px 12px 10px;display:flex;flex-direction:column;gap:6px;}
 .smm-row{display:flex;align-items:center;gap:8px;}
 .smm-lbl{font-size:12px;font-weight:700;min-width:58px;padding:3px 8px;border-radius:999px;text-align:center;}
@@ -94,7 +93,6 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 .fb-pass{background:#EAF3DE;color:#174304;}.fb-warn{background:#FAEEDA;color:#412402;}.fb-fail{background:#FCEBEB;color:#501313;}
 .sb-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:.75rem;}
 .sb-item{text-align:center;padding:7px 2px;border-radius:8px;background:#f0ede8;}
-.sb-ltr{font-family:'Bebas Neue',sans-serif;font-size:13px;line-height:1;}
 .gate-note{background:#FAEEDA;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;color:#412402;margin-top:.75rem;display:none;text-align:center;}
 .gate-note.visible{display:block;}
 #lb-screen{text-align:center;}
@@ -112,6 +110,7 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 .lb-live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#1D9E75;font-weight:600;margin-top:6px;justify-content:center;}
 .lb-dot{width:8px;height:8px;border-radius:50%;background:#1D9E75;animation:pulse 1.5s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.sync-indicator{font-size:11px;color:#1D9E75;text-align:center;margin-bottom:.5rem;min-height:16px;}
 #teacher-screen .tv-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;}
 .tv-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
 .tv-tab{background:transparent;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;padding:7px 16px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;color:#555;cursor:pointer;}
@@ -125,8 +124,8 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 .cf-btn{background:transparent;border:0.5px solid rgba(0,0,0,0.2);border-radius:999px;padding:5px 14px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:#555;cursor:pointer;}
 .cf-btn.active{background:#185FA5;color:white;border-color:#185FA5;}
 .roster-table{width:100%;border-collapse:collapse;font-size:13px;}
-.roster-table th{text-align:left;padding:8px 8px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#aaa;border-bottom:0.5px solid rgba(0,0,0,0.1);}
-.roster-table td{padding:8px 8px;border-bottom:0.5px solid rgba(0,0,0,0.07);color:#1a1a1a;}
+.roster-table th{text-align:left;padding:8px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#aaa;border-bottom:0.5px solid rgba(0,0,0,0.1);}
+.roster-table td{padding:8px;border-bottom:0.5px solid rgba(0,0,0,0.07);color:#1a1a1a;}
 .roster-table tr:hover td{background:#f0ede8;}
 .sc-chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;}
 .sc-hi{background:#EAF3DE;color:#27500A;}.sc-mid{background:#FAEEDA;color:#633806;}.sc-lo{background:#FCEBEB;color:#791F1F;}
@@ -143,9 +142,17 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 .pin-screen{max-width:340px;margin:3rem auto 0;text-align:center;}
 .pin-error{color:#E24B4A;font-size:13px;margin-top:8px;min-height:18px;}
 .score-note{font-size:11px;color:#aaa;text-align:center;margin-bottom:.75rem;}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(245,244,240,0.9);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
+.loading-spinner{width:36px;height:36px;border:3px solid #e0ddd8;border-top-color:#185FA5;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loading" style="display:none;">
+  <div class="loading-spinner"></div>
+  <div style="font-size:13px;color:#666;">Saving to scoreboard...</div>
+</div>
 
 <!-- LOGIN -->
 <div class="screen active" id="login-screen">
@@ -235,7 +242,8 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
       <div class="sb-grid" id="g-sb"></div>
     </div>
     <div class="gate-note" id="g-gate"></div>
-    <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap;">
+    <div class="sync-indicator" id="sync-indicator"></div>
+    <div style="display:flex;gap:10px;margin-top:.5rem;flex-wrap:wrap;">
       <button class="btn-p" id="g-next" style="font-size:18px;">Next passage</button>
       <button class="btn-s" onclick="go('lb-screen');renderLB('all');">Leaderboard</button>
     </div>
@@ -246,7 +254,7 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 <div class="screen" id="lb-screen">
   <div style="text-align:center;margin-bottom:1.25rem;">
     <div class="hd1">Leaderboard</div>
-    <div class="sub">Live — updates as students submit</div>
+    <div class="sub">Live — updates from all devices</div>
     <div class="lb-live"><div class="lb-dot"></div>Live</div>
   </div>
   <div class="lb-filter">
@@ -255,7 +263,7 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
     <button class="lb-filter-btn" onclick="renderLB('p3');setLBF(this)">Period 3</button>
     <button class="lb-filter-btn" onclick="renderLB('p4');setLBF(this)">Period 4</button>
   </div>
-  <div class="lb-list" id="lb-list"></div>
+  <div class="lb-list" id="lb-list"><div class="lb-empty">Loading scores...</div></div>
   <div style="text-align:center;margin-top:1.25rem;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
     <button class="btn-s" onclick="go('game-screen')">Back to game</button>
     <button class="btn-s" onclick="go('login-screen')">Home</button>
@@ -268,9 +276,11 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
     <div class="hd2">Teacher Dashboard</div>
     <div style="display:flex;gap:8px;">
       <button class="btn-s" style="font-size:12px;" onclick="exportSummary()">Export</button>
+      <button class="btn-s" style="font-size:12px;" onclick="refreshTeacher()">Refresh</button>
       <button class="btn-s" style="font-size:12px;" onclick="go('login-screen')">Home</button>
     </div>
   </div>
+  <div id="tv-sync-note" style="font-size:12px;color:#1D9E75;margin-bottom:1rem;"></div>
   <div class="tv-tabs">
     <button class="tv-tab active" onclick="tvTab('overview',this)">Overview</button>
     <button class="tv-tab" onclick="tvTab('roster',this)">Roster</button>
@@ -284,6 +294,7 @@ body{font-family:'Nunito',sans-serif;background:#f5f4f0;min-height:100vh;padding
 </div>
 
 <script>
+const SHEET_URL='https://script.google.com/macros/s/AKfycbxwxQNhfVd7qkx9Fwq7rfiZCnSuKyOg1oO2rNwwU7NSgkDXh-_JZxEAbEFQssr-XlF5ow/exec';
 const CLASSES={p1:{label:'Period 1',honors:false},p3:{label:'Period 3',honors:true},p4:{label:'Period 4',honors:false}};
 const PASS_GATE_STD=8,PASS_GATE_HON=9,MAX_PTS=14;
 const RACES_DEF=[
@@ -313,44 +324,390 @@ const HON_PROMPTS=[
   {theme:'Honors',themeClass:'theme-honors',passage:`The association between the color green and St. Patrick's Day is often taken for granted, yet the history behind it reveals how symbols gain and shift meaning over time. Saint Patrick himself was historically depicted in blue vestments, and blue remained the color associated with Irish identity for centuries. The shift to green was gradual, tied to the symbolism of the shamrock, the phrase "the Emerald Isle," and eventually, the green uniforms of Irish rebellion movements. Cultural symbols, this history suggests, are not fixed — they are negotiated and reconstructed by communities across generations.`,question:"What is the central argument the passage makes about cultural symbols? How does the history of the color green support that argument? Use evidence and explain why this matters beyond just St. Patrick's Day."},
   {theme:'Honors',themeClass:'theme-honors',passage:`Student-athletes who compete in the NCAA Tournament face a unique tension: they are expected to perform at an elite athletic level while simultaneously meeting the academic obligations of full-time college students. Critics of the NCAA system argue that the tournament's commercial success — generating over $1 billion in revenue — stands in stark contrast to the fact that athletes historically received no direct financial compensation. Supporters counter that scholarships, coaching, and national exposure provide substantial value. This debate reflects broader questions about fairness, labor, and the purpose of collegiate athletics.`,question:'What central tension does the passage identify? Using evidence from the text, explain which side of the argument you find more convincing and why. Make sure your explanation goes beyond simply restating the passage.'}
 ];
+
 let state={name:'',classId:'',nickname:'',currentRound:0,totalScore:0,streak:0,roundAttempts:0,hintsVisible:false};
-let students=[];
-try{students=JSON.parse(localStorage.getItem('sysv5_students')||'[]');}catch(e){}
-function save(){try{localStorage.setItem('sysv5_students',JSON.stringify(students));}catch(e){}}
+let sheetData=[];
+let lbFilter='all';
+let lbTimer=null;
+let tvFilter='all';
+
+function showLoading(v){document.getElementById('loading').style.display=v?'flex':'none';}
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function selectClass(cls,el){state.classId=cls;document.querySelectorAll('.class-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');}
 function isHonors(){return CLASSES[state.classId]&&CLASSES[state.classId].honors;}
 function getPrompts(){return isHonors()?HON_PROMPTS:STD_PROMPTS;}
 function passGate(){return isHonors()?PASS_GATE_HON:PASS_GATE_STD;}
-function assignNickname(){const used=students.map(s=>s.nickname);const avail=NICKNAMES.filter(n=>!used.includes(n));return avail.length?avail[Math.floor(Math.random()*avail.length)]:NICKNAMES[Math.floor(Math.random()*NICKNAMES.length)];}
-function checkPin(){const val=document.getElementById('pin-input').value.trim().toLowerCase();const err=document.getElementById('pin-error');if(val==='clock it'){document.getElementById('pin-input').value='';err.textContent='';go('teacher-screen');renderTeacher();}else{err.textContent='Incorrect passcode — try again.';document.getElementById('pin-input').value='';document.getElementById('pin-input').focus();}}
-function startGame(){const n=document.getElementById('login-name').value.trim();if(!n){alert('Please enter your name!');return;}if(!state.classId){alert('Please select your class!');return;}state.name=n;state.currentRound=0;state.totalScore=0;state.streak=0;let existing=students.find(s=>s.name===n&&s.classId===state.classId);if(!existing){state.nickname=assignNickname();existing={name:n,classId:state.classId,nickname:state.nickname,rounds:[]};students.push(existing);save();}else{state.nickname=existing.nickname;}go('game-screen');const hb=document.getElementById('b-honors');if(isHonors()){hb.style.display='block';hb.textContent='Honors mode active — inference questions. Pass gate: 9/14.';}else{hb.style.display='none';}loadPassage();}
-function loadPassage(){state.roundAttempts=0;const p=getPrompts()[state.currentRound];document.getElementById('g-text').textContent=p.passage;document.getElementById('g-q').textContent=p.question;document.getElementById('g-theme').textContent=p.theme;document.getElementById('g-theme').className='theme-badge '+p.themeClass;document.getElementById('g-round').textContent=state.currentRound+1;document.getElementById('g-results').classList.remove('visible');document.getElementById('g-submit').disabled=false;document.getElementById('b-streak').classList.remove('visible');document.getElementById('b-retry').classList.remove('visible');document.getElementById('g-gate').classList.remove('visible');const hn=document.getElementById('g-hnote');if(isHonors()){hn.style.display='block';hn.textContent='Honors: your response should include inference and analysis that goes beyond the text.';}else{hn.style.display='none';}document.getElementById('g-score-note').textContent='Each round is worth '+MAX_PTS+' points — you need '+passGate()+'/'+MAX_PTS+' to advance.';buildRacesGrid();buildTracker();}
-function buildTracker(){const t=document.getElementById('g-tracker');t.innerHTML='';for(let i=0;i<5;i++){const d=document.createElement('div');d.className='rdot'+(i<state.currentRound?' done':i===state.currentRound?' active':'');t.appendChild(d);}}
-function buildRacesGrid(){const g=document.getElementById('g-races');g.innerHTML='';RACES_DEF.forEach(r=>{const row=document.createElement('div');row.className='r-row';let h='';if(r.isTransC){h=`<div class="r-hdr"><div class="r-ltr" style="color:#1D9E75;font-size:14px;font-family:'Bebas Neue',sans-serif;">T\u2192C</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-TC">\u2014</div></div><div class="trans-blank-wrap"><div class="trans-blank-label">Write your transition phrase</div><div class="trans-blank-row"><input class="trans-blank-in" id="inp-TC" placeholder='e.g. "For example," or "According to the text,"' maxlength="80" oninput="liveCheckTrans('TC')" /><span class="trans-blank-st" id="tst-TC"></span></div></div><div class="r-hint" id="hint-TC" style="display:none">${r.hint}</div>`;}else if(r.isTransS){h=`<div class="r-hdr"><div class="r-ltr" style="color:#D4537E;font-size:14px;font-family:'Bebas Neue',sans-serif;">T\u2192S</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-TS">\u2014</div></div><div class="trans-blank-wrap"><div class="trans-blank-label">Write your transition phrase</div><div class="trans-blank-row"><input class="trans-blank-in" id="inp-TS" placeholder='e.g. "In conclusion," or "Overall,"' maxlength="80" oninput="liveCheckTrans('TS')" /><span class="trans-blank-st" id="tst-TS"></span></div></div><div class="r-hint" id="hint-TS" style="display:none">${r.hint}</div>`;}else if(r.smm){h=`<div class="r-hdr"><div class="r-ltr E">E</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-E">\u2014</div></div><div class="smm-block"><div class="smm-row"><span class="smm-lbl smm-says">Says</span><input class="smm-in" id="smm-says" placeholder="The passage says '...'" oninput="liveSmm()" /><span class="smm-st" id="smm-says-s"></span></div><div class="smm-row"><span class="smm-lbl smm-means">Means</span><input class="smm-in" id="smm-means" placeholder="This means that..." oninput="liveSmm()" /><span class="smm-st" id="smm-means-s"></span></div><div class="smm-row"><span class="smm-lbl smm-matters">Matters</span><input class="smm-in" id="smm-matters" placeholder="This matters because..." oninput="liveSmm()" /><span class="smm-st" id="smm-matters-s"></span></div></div><div class="r-hint" id="hint-E" style="display:none">${r.hint}</div>`;}else{h=`<div class="r-hdr"><div class="r-ltr ${r.key}">${r.key}</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-${r.key}">\u2014</div></div><textarea class="r-ta" id="inp-${r.key}" placeholder="Write your ${r.key} here..." rows="2" oninput="liveCheck('${r.key}')"></textarea><div class="r-hint" id="hint-${r.key}" style="display:none">${r.hint}</div>`;}row.innerHTML=h;g.appendChild(row);});}
-function liveCheck(k){const v=(document.getElementById('inp-'+k)||{}).value||'';const s=document.getElementById('st-'+k);if(!s)return;if(!v.trim()){s.className='r-st st-empty';s.textContent='\u2014';}else if(v.trim().split(' ').length<5){s.className='r-st st-short';s.textContent='too short';}else{s.className='r-st st-ok';s.textContent='ready';}}
-function liveCheckTrans(k){const v=(document.getElementById('inp-'+k)||{}).value||'';const s=document.getElementById('st-'+k);if(!s)return;if(!v.trim()){s.className='r-st st-empty';s.textContent='\u2014';}else if(v.trim().split(/\s+/).length<2){s.className='r-st st-short';s.textContent='too short';}else{s.className='r-st st-ok';s.textContent='ready';}const ts=document.getElementById('tst-'+k);if(ts)ts.textContent=v.trim().length>1?'\u2713':'';}
-function liveSmm(){const ids=['smm-says','smm-means','smm-matters'];let all=true;ids.forEach(id=>{const v=(document.getElementById(id)||{}).value||'';const s=document.getElementById(id+'-s');if(!s)return;const ok=v.trim().split(' ').filter(Boolean).length>=4;s.textContent=ok?'\u2713':'';if(!ok)all=false;});const s=document.getElementById('st-E');if(!s)return;s.className='r-st '+(all?'st-ok':'st-short');s.textContent=all?'ready':'incomplete';}
+
+function assignNickname(){
+  const used=sheetData.map(r=>r.nickname).filter(Boolean);
+  const avail=NICKNAMES.filter(n=>!used.includes(n));
+  return avail.length?avail[Math.floor(Math.random()*avail.length)]:NICKNAMES[Math.floor(Math.random()*NICKNAMES.length)];
+}
+
+function checkPin(){
+  const val=document.getElementById('pin-input').value.trim().toLowerCase();
+  const err=document.getElementById('pin-error');
+  if(val==='clock it'){
+    document.getElementById('pin-input').value='';err.textContent='';
+    go('teacher-screen');refreshTeacher();
+  } else {
+    err.textContent='Incorrect passcode — try again.';
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+async function fetchSheetData(){
+  try{
+    const res=await fetch(SHEET_URL+'?t='+Date.now());
+    const json=await res.json();
+    if(json.status==='ok'&&json.data){
+      sheetData=json.data.slice(1).map(r=>({
+        timestamp:r[0],name:r[1],classId:r[2],nickname:r[3],
+        round:parseInt(r[4]),score:parseInt(r[5]),attempts:parseInt(r[6]),
+        theme:r[7],R:r[8],A:r[9],TC:r[10],C:r[11],E:r[12],TS:r[13],S:r[14]
+      })).filter(r=>r.name);
+    }
+  }catch(e){console.log('Fetch error',e);}
+}
+
+async function postRound(data){
+  try{
+    await fetch(SHEET_URL,{
+      method:'POST',
+      body:JSON.stringify(data),
+      headers:{'Content-Type':'application/json'}
+    });
+  }catch(e){console.log('Post error',e);}
+}
+
+function startGame(){
+  const n=document.getElementById('login-name').value.trim();
+  if(!n){alert('Please enter your name!');return;}
+  if(!state.classId){alert('Please select your class!');return;}
+  state.name=n;state.currentRound=0;state.totalScore=0;state.streak=0;
+  const existing=sheetData.find(r=>r.name===n&&r.classId===state.classId);
+  state.nickname=existing?existing.nickname:assignNickname();
+  go('game-screen');
+  const hb=document.getElementById('b-honors');
+  if(isHonors()){hb.style.display='block';hb.textContent='Honors mode active — inference questions. Pass gate: 9/14.';}
+  else{hb.style.display='none';}
+  loadPassage();
+}
+
+function loadPassage(){
+  state.roundAttempts=0;
+  const p=getPrompts()[state.currentRound];
+  document.getElementById('g-text').textContent=p.passage;
+  document.getElementById('g-q').textContent=p.question;
+  document.getElementById('g-theme').textContent=p.theme;
+  document.getElementById('g-theme').className='theme-badge '+p.themeClass;
+  document.getElementById('g-round').textContent=state.currentRound+1;
+  document.getElementById('g-results').classList.remove('visible');
+  document.getElementById('g-submit').disabled=false;
+  document.getElementById('b-streak').classList.remove('visible');
+  document.getElementById('b-retry').classList.remove('visible');
+  document.getElementById('g-gate').classList.remove('visible');
+  document.getElementById('sync-indicator').textContent='';
+  const hn=document.getElementById('g-hnote');
+  if(isHonors()){hn.style.display='block';hn.textContent='Honors: your response should include inference and analysis that goes beyond the text.';}
+  else{hn.style.display='none';}
+  document.getElementById('g-score-note').textContent='Each round is worth '+MAX_PTS+' points — you need '+passGate()+'/'+MAX_PTS+' to advance.';
+  buildRacesGrid();buildTracker();
+}
+
+function buildTracker(){
+  const t=document.getElementById('g-tracker');t.innerHTML='';
+  for(let i=0;i<5;i++){const d=document.createElement('div');d.className='rdot'+(i<state.currentRound?' done':i===state.currentRound?' active':'');t.appendChild(d);}
+}
+
+function buildRacesGrid(){
+  const g=document.getElementById('g-races');g.innerHTML='';
+  RACES_DEF.forEach(r=>{
+    const row=document.createElement('div');row.className='r-row';let h='';
+    if(r.isTransC){
+      h=`<div class="r-hdr"><div class="r-ltr" style="color:#1D9E75;font-size:14px;font-family:'Bebas Neue',sans-serif;">T→C</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-TC">—</div></div>
+      <div class="trans-blank-wrap"><div class="trans-blank-label">Write your transition phrase</div>
+      <div class="trans-blank-row"><input class="trans-blank-in" id="inp-TC" placeholder='e.g. "For example," or "According to the text,"' maxlength="80" oninput="liveCheckTrans('TC')" /><span class="trans-blank-st" id="tst-TC"></span></div></div>
+      <div class="r-hint" id="hint-TC" style="display:none">${r.hint}</div>`;
+    } else if(r.isTransS){
+      h=`<div class="r-hdr"><div class="r-ltr" style="color:#D4537E;font-size:14px;font-family:'Bebas Neue',sans-serif;">T→S</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-TS">—</div></div>
+      <div class="trans-blank-wrap"><div class="trans-blank-label">Write your transition phrase</div>
+      <div class="trans-blank-row"><input class="trans-blank-in" id="inp-TS" placeholder='e.g. "In conclusion," or "Overall,"' maxlength="80" oninput="liveCheckTrans('TS')" /><span class="trans-blank-st" id="tst-TS"></span></div></div>
+      <div class="r-hint" id="hint-TS" style="display:none">${r.hint}</div>`;
+    } else if(r.smm){
+      h=`<div class="r-hdr"><div class="r-ltr E">E</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-E">—</div></div>
+      <div class="smm-block">
+      <div class="smm-row"><span class="smm-lbl smm-says">Says</span><input class="smm-in" id="smm-says" placeholder="The passage says '...'" oninput="liveSmm()" /><span class="smm-st" id="smm-says-s"></span></div>
+      <div class="smm-row"><span class="smm-lbl smm-means">Means</span><input class="smm-in" id="smm-means" placeholder="This means that..." oninput="liveSmm()" /><span class="smm-st" id="smm-means-s"></span></div>
+      <div class="smm-row"><span class="smm-lbl smm-matters">Matters</span><input class="smm-in" id="smm-matters" placeholder="This matters because..." oninput="liveSmm()" /><span class="smm-st" id="smm-matters-s"></span></div>
+      </div><div class="r-hint" id="hint-E" style="display:none">${r.hint}</div>`;
+    } else {
+      h=`<div class="r-hdr"><div class="r-ltr ${r.key}">${r.key}</div><div class="r-name">${r.name}</div><div class="r-st st-empty" id="st-${r.key}">—</div></div>
+      <textarea class="r-ta" id="inp-${r.key}" placeholder="Write your ${r.key} here..." rows="2" oninput="liveCheck('${r.key}')"></textarea>
+      <div class="r-hint" id="hint-${r.key}" style="display:none">${r.hint}</div>`;
+    }
+    row.innerHTML=h;g.appendChild(row);
+  });
+}
+
+function liveCheck(k){const v=(document.getElementById('inp-'+k)||{}).value||'';const s=document.getElementById('st-'+k);if(!s)return;if(!v.trim()){s.className='r-st st-empty';s.textContent='—';}else if(v.trim().split(' ').length<5){s.className='r-st st-short';s.textContent='too short';}else{s.className='r-st st-ok';s.textContent='ready';}}
+function liveCheckTrans(k){const v=(document.getElementById('inp-'+k)||{}).value||'';const s=document.getElementById('st-'+k);if(!s)return;if(!v.trim()){s.className='r-st st-empty';s.textContent='—';}else if(v.trim().split(/\s+/).length<2){s.className='r-st st-short';s.textContent='too short';}else{s.className='r-st st-ok';s.textContent='ready';}const ts=document.getElementById('tst-'+k);if(ts)ts.textContent=v.trim().length>1?'✓':'';}
+function liveSmm(){const ids=['smm-says','smm-means','smm-matters'];let all=true;ids.forEach(id=>{const v=(document.getElementById(id)||{}).value||'';const s=document.getElementById(id+'-s');if(!s)return;const ok=v.trim().split(' ').filter(Boolean).length>=4;s.textContent=ok?'✓':'';if(!ok)all=false;});const s=document.getElementById('st-E');if(!s)return;s.className='r-st '+(all?'st-ok':'st-short');s.textContent=all?'ready':'incomplete';}
 function toggleHints(){state.hintsVisible=!state.hintsVisible;RACES_DEF.forEach(r=>{const key=r.isTransC?'TC':r.isTransS?'TS':r.key;const h=document.getElementById('hint-'+key);if(h)h.style.display=state.hintsVisible?'block':'none';});}
 function clearAll(){['R','A','C','S'].forEach(k=>{const i=document.getElementById('inp-'+k);if(i)i.value='';liveCheck(k);});['TC','TS'].forEach(k=>{const i=document.getElementById('inp-'+k);if(i)i.value='';liveCheckTrans(k);});['smm-says','smm-means','smm-matters'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});['smm-says-s','smm-means-s','smm-matters-s'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='';});liveSmm();}
-function scoreKey(k,val,q,pass,smm){const words=val.trim().split(/\s+/).filter(Boolean);const wc=words.length;const v=val.toLowerCase();let pts=0,fb='',grade='fail';if(k==='R'){const qw=q.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(w=>w.length>3);const ov=qw.filter(w=>v.includes(w)).length;if(wc<5){fb='Restatement too short — write a full sentence.';pts=0;}else if(ov<2){fb='Include key words from the question in your restatement.';pts=1;grade='warn';}else{fb='Great restatement!';pts=2;grade='pass';}}if(k==='A'){if(wc<5){fb='Answer too short — be more complete.';pts=0;}else if(wc<10){fb='Good start — expand your answer a bit more.';pts=1;grade='warn';}else{fb='Solid, clear answer!';pts=2;grade='pass';}}if(k==='TC'){const tc=val.trim().toLowerCase();const hasGoodPhrase=TRANS_C_PHRASES.some(p=>tc.includes(p));const wc2=tc.split(/\s+/).filter(Boolean).length;if(!tc||wc2<2){fb='Write a transition phrase before your evidence — try "For example," or "According to the text,"';pts=0;}else if(!hasGoodPhrase){fb='Good attempt! Try "For example," "According to the text," or "The passage states,"';pts=1;grade='warn';}else{fb='Perfect transition — sets up your evidence nicely!';pts=2;grade='pass';}}if(k==='C'){const hq=v.includes('"')||v.includes('\u201c')||v.includes('according to')||v.includes('the passage')||v.includes('states')||v.includes('says');const chunks=pass.toLowerCase().split(/[.,!?]/).map(s=>s.trim());const mc=chunks.some(ch=>{const cw=ch.split(/\s+/).filter(w=>w.length>4);return cw.filter(w=>v.includes(w)).length>=3;});if(wc<5){fb='Add a quote or specific detail from the passage.';pts=0;}else if(!hq&&!mc){fb='Use language directly from the passage — try quoting!';pts=1;grade='warn';}else{fb='Nice — you pulled directly from the text!';pts=2;grade='pass';}}if(k==='E'){const says=(smm.says||'').trim();const means=(smm.means||'').trim();const matters=(smm.matters||'').trim();const sOk=says.split(' ').filter(Boolean).length>=4;const mOk=means.split(' ').filter(Boolean).length>=4;const mtOk=matters.split(' ').filter(Boolean).length>=4;const mw=['means','shows','suggests','tells','explains','reveals'];const mtw=['matters','important','significant','because','therefore','this is why'];const hmw=mw.some(w=>means.toLowerCase().includes(w));const hmtw=mtw.some(w=>matters.toLowerCase().includes(w));if(!sOk||!mOk||!mtOk){fb='All three — Says, Means, and Matters — must be complete sentences.';pts=0;}else if(!hmw||!hmtw){fb='Good! Use "means/shows" in Means and "matters/because" in Matters.';pts=1;grade='warn';}else{fb='Excellent — all three components are strong!';pts=2;grade='pass';}}if(k==='TS'){const ts=val.trim().toLowerCase();const hasGoodPhrase=TRANS_S_PHRASES.some(p=>ts.includes(p));const wc2=ts.split(/\s+/).filter(Boolean).length;if(!ts||wc2<2){fb='Write a closing transition — try "In conclusion," or "Overall,"';pts=0;}else if(!hasGoodPhrase){fb='Good try! Try "In conclusion," "Overall," "Clearly," or "Therefore,"';pts=1;grade='warn';}else{fb='Great closing transition!';pts=2;grade='pass';}}if(k==='S'){if(wc<6){fb='Summary too short — add a closing thought.';pts=0;}else if(wc<12){fb='Good start! Expand your closing sentence a bit more.';pts=1;grade='warn';}else{fb='Strong closing sentence!';pts=2;grade='pass';}}return{pts,fb,grade};}
-function checkAnswer(){const p=getPrompts()[state.currentRound];state.roundAttempts++;const smm={says:(document.getElementById('smm-says')||{}).value||'',means:(document.getElementById('smm-means')||{}).value||'',matters:(document.getElementById('smm-matters')||{}).value||''};const resp={};let roundPts=0;const fbs=[],sbs=[];RACES_DEF.forEach(r=>{const k=r.isTransC?'TC':r.isTransS?'TS':r.key;let v='';if(r.smm){v='Says: '+smm.says+' | Means: '+smm.means+' | Matters: '+smm.matters;}else if(r.isTransC||r.isTransS){v=(document.getElementById('inp-'+k)||{}).value||'';}else{v=(document.getElementById('inp-'+k)||{}).value||'';}resp[k]=v;const res=scoreKey(k,v,p.question,p.passage,smm);roundPts+=res.pts;fbs.push({key:k,name:r.name,...res});sbs.push({key:k,pts:res.pts,grade:res.grade});});const pg=passGate();const passed=roundPts>=pg;state.totalScore+=roundPts;const pct=Math.round(roundPts/MAX_PTS*100);if(passed){state.streak++;}else{state.streak=0;}document.getElementById('g-score').textContent=state.totalScore;document.getElementById('g-streak').textContent=state.streak;let lbl,cls,sub;if(pct>=90){lbl='Swish!';cls='swish';sub='Nothing but net!';}else if(pct>=70){lbl='Bank shot!';cls='bank';sub='Off the glass and in!';}else if(pct>=50){lbl='Brick';cls='brick';sub='Hits the rim — review your feedback!';}else{lbl='Air ball!';cls='airball';sub='No contact — go back and review RACES!';}document.getElementById('g-rscore').textContent=roundPts+'/'+MAX_PTS;document.getElementById('g-rscore').className='big-score '+cls;document.getElementById('g-rlbl').textContent=lbl;document.getElementById('g-rlbl').className='shot-lbl '+cls;document.getElementById('g-rsub').textContent=sub;const pb=document.getElementById('g-pb');pb.style.width=pct+'%';pb.className='pb-fill'+(pct>=80?' pb-g':pct>=50?' pb-a':' pb-r');const fbEl=document.getElementById('g-fb');fbEl.innerHTML='';fbs.forEach(f=>{const icon=f.grade==='pass'?'\u2713':f.grade==='warn'?'!':'\u2717';fbEl.innerHTML+='<div class="fb-item fb-'+f.grade+'"><div style="font-size:15px;flex-shrink:0;">'+icon+'</div><div><strong>'+(f.key==='TC'?'T\u2192C':f.key==='TS'?'T\u2192S':f.key)+' \u2014 '+f.name+':</strong> '+f.fb+'</div></div>';});const sbEl=document.getElementById('g-sb');sbEl.innerHTML='';sbs.forEach(s=>{const mk=s.pts===2?'\u2713\u2713':s.pts===1?'\u2713':'\u2717';const disp=s.key==='TC'?'T\u2192C':s.key==='TS'?'T\u2192S':s.key;sbEl.innerHTML+='<div class="sb-item"><div class="sb-ltr" style="color:'+BAR_COLORS[s.key]+';">'+disp+'</div><div style="font-size:12px;margin-top:2px;">'+mk+'</div><div style="font-size:10px;color:#aaa;margin-top:1px;">'+s.pts+'/2</div></div>';});if(state.streak>=2){const bs=document.getElementById('b-streak');bs.textContent=state.streak+'-response streak \u2014 keep it going!';bs.classList.add('visible');}saveRound(resp,roundPts,passed,sbs);const gate=document.getElementById('g-gate');const nxt=document.getElementById('g-next');if(!passed){gate.classList.add('visible');gate.textContent='You scored '+roundPts+'/'+MAX_PTS+' \u2014 you need '+pg+'/'+MAX_PTS+' to advance. Read the feedback, revise, and try again! (Attempt '+state.roundAttempts+')';document.getElementById('b-retry').textContent='Attempt '+state.roundAttempts+' \u2014 not quite! Revise and shoot again.';document.getElementById('b-retry').classList.add('visible');nxt.style.display='none';document.getElementById('g-submit').disabled=false;}else{gate.classList.remove('visible');document.getElementById('b-retry').classList.remove('visible');nxt.style.display='block';document.getElementById('g-submit').disabled=true;nxt.textContent=state.currentRound>=4?'See final score':'Next passage';nxt.onclick=state.currentRound>=4?showFinal:nextRound;}document.getElementById('g-results').classList.add('visible');document.getElementById('g-results').scrollIntoView({behavior:'smooth',block:'nearest'});}
-function saveRound(resp,pts,passed,sbs){let s=students.find(x=>x.name===state.name&&x.classId===state.classId);if(!s){s={name:state.name,classId:state.classId,nickname:state.nickname,rounds:[]};students.push(s);}s.rounds=s.rounds.filter(r=>r.round!==state.currentRound);s.rounds.push({round:state.currentRound,score:pts,passed,responses:resp,sbs,attempts:state.roundAttempts,theme:getPrompts()[state.currentRound].theme,question:getPrompts()[state.currentRound].question});save();}
+
+function scoreKey(k,val,q,pass,smm){
+  const words=val.trim().split(/\s+/).filter(Boolean);const wc=words.length;const v=val.toLowerCase();
+  let pts=0,fb='',grade='fail';
+  if(k==='R'){const qw=q.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(w=>w.length>3);const ov=qw.filter(w=>v.includes(w)).length;if(wc<5){fb='Restatement too short — write a full sentence.';pts=0;}else if(ov<2){fb='Include key words from the question in your restatement.';pts=1;grade='warn';}else{fb='Great restatement!';pts=2;grade='pass';}}
+  if(k==='A'){if(wc<5){fb='Answer too short — be more complete.';pts=0;}else if(wc<10){fb='Good start — expand your answer a bit more.';pts=1;grade='warn';}else{fb='Solid, clear answer!';pts=2;grade='pass';}}
+  if(k==='TC'){const tc=val.trim().toLowerCase();const ok=TRANS_C_PHRASES.some(p=>tc.includes(p));const wc2=tc.split(/\s+/).filter(Boolean).length;if(!tc||wc2<2){fb='Write a transition phrase — try "For example," or "According to the text,"';pts=0;}else if(!ok){fb='Good attempt! Try "For example," "According to the text," or "The passage states,"';pts=1;grade='warn';}else{fb='Perfect transition — sets up your evidence nicely!';pts=2;grade='pass';}}
+  if(k==='C'){const hq=v.includes('"')||v.includes('\u201c')||v.includes('according to')||v.includes('the passage')||v.includes('states')||v.includes('says');const chunks=pass.toLowerCase().split(/[.,!?]/).map(s=>s.trim());const mc=chunks.some(ch=>{const cw=ch.split(/\s+/).filter(w=>w.length>4);return cw.filter(w=>v.includes(w)).length>=3;});if(wc<5){fb='Add a quote or specific detail from the passage.';pts=0;}else if(!hq&&!mc){fb='Use language directly from the passage — try quoting!';pts=1;grade='warn';}else{fb='Nice — you pulled directly from the text!';pts=2;grade='pass';}}
+  if(k==='E'){const says=(smm.says||'').trim();const means=(smm.means||'').trim();const matters=(smm.matters||'').trim();const sOk=says.split(' ').filter(Boolean).length>=4;const mOk=means.split(' ').filter(Boolean).length>=4;const mtOk=matters.split(' ').filter(Boolean).length>=4;const mw=['means','shows','suggests','tells','explains','reveals'];const mtw=['matters','important','significant','because','therefore','this is why'];const hmw=mw.some(w=>means.toLowerCase().includes(w));const hmtw=mtw.some(w=>matters.toLowerCase().includes(w));if(!sOk||!mOk||!mtOk){fb='All three — Says, Means, and Matters — must be complete sentences.';pts=0;}else if(!hmw||!hmtw){fb='Good! Use "means/shows" in Means and "matters/because" in Matters.';pts=1;grade='warn';}else{fb='Excellent — all three components are strong!';pts=2;grade='pass';}}
+  if(k==='TS'){const ts=val.trim().toLowerCase();const ok=TRANS_S_PHRASES.some(p=>ts.includes(p));const wc2=ts.split(/\s+/).filter(Boolean).length;if(!ts||wc2<2){fb='Write a closing transition — try "In conclusion," or "Overall,"';pts=0;}else if(!ok){fb='Good try! Try "In conclusion," "Overall," "Clearly," or "Therefore,"';pts=1;grade='warn';}else{fb='Great closing transition!';pts=2;grade='pass';}}
+  if(k==='S'){if(wc<6){fb='Summary too short — add a closing thought.';pts=0;}else if(wc<12){fb='Good start! Expand your closing sentence a bit more.';pts=1;grade='warn';}else{fb='Strong closing sentence!';pts=2;grade='pass';}}
+  return{pts,fb,grade};
+}
+
+async function checkAnswer(){
+  const p=getPrompts()[state.currentRound];
+  state.roundAttempts++;
+  const smm={says:(document.getElementById('smm-says')||{}).value||'',means:(document.getElementById('smm-means')||{}).value||'',matters:(document.getElementById('smm-matters')||{}).value||''};
+  const resp={};let roundPts=0;const fbs=[],sbs=[];
+  RACES_DEF.forEach(r=>{
+    const k=r.isTransC?'TC':r.isTransS?'TS':r.key;
+    let v='';
+    if(r.smm){v='Says: '+smm.says+' | Means: '+smm.means+' | Matters: '+smm.matters;}
+    else{v=(document.getElementById('inp-'+k)||{}).value||'';}
+    resp[k]=v;
+    const res=scoreKey(k,v,p.question,p.passage,smm);
+    roundPts+=res.pts;fbs.push({key:k,name:r.name,...res});sbs.push({key:k,pts:res.pts,grade:res.grade});
+  });
+  const pg=passGate();const passed=roundPts>=pg;
+  state.totalScore+=roundPts;
+  const pct=Math.round(roundPts/MAX_PTS*100);
+  if(passed){state.streak++;}else{state.streak=0;}
+  document.getElementById('g-score').textContent=state.totalScore;
+  document.getElementById('g-streak').textContent=state.streak;
+
+  let lbl,cls,sub;
+  if(pct>=90){lbl='Swish!';cls='swish';sub='Nothing but net!';}
+  else if(pct>=70){lbl='Bank shot!';cls='bank';sub='Off the glass and in!';}
+  else if(pct>=50){lbl='Brick';cls='brick';sub='Hits the rim — review your feedback!';}
+  else{lbl='Air ball!';cls='airball';sub='No contact — go back and review RACES!';}
+
+  document.getElementById('g-rscore').textContent=roundPts+'/'+MAX_PTS;
+  document.getElementById('g-rscore').className='big-score '+cls;
+  document.getElementById('g-rlbl').textContent=lbl;document.getElementById('g-rlbl').className='shot-lbl '+cls;
+  document.getElementById('g-rsub').textContent=sub;
+  const pb=document.getElementById('g-pb');pb.style.width=pct+'%';
+  pb.className='pb-fill'+(pct>=80?' pb-g':pct>=50?' pb-a':' pb-r');
+
+  const fbEl=document.getElementById('g-fb');fbEl.innerHTML='';
+  fbs.forEach(f=>{const icon=f.grade==='pass'?'✓':f.grade==='warn'?'!':'✗';fbEl.innerHTML+='<div class="fb-item fb-'+f.grade+'"><div style="font-size:15px;flex-shrink:0;">'+icon+'</div><div><strong>'+(f.key==='TC'?'T→C':f.key==='TS'?'T→S':f.key)+' — '+f.name+':</strong> '+f.fb+'</div></div>';});
+
+  const sbEl=document.getElementById('g-sb');sbEl.innerHTML='';
+  sbs.forEach(s=>{const mk=s.pts===2?'✓✓':s.pts===1?'✓':'✗';const disp=s.key==='TC'?'T→C':s.key==='TS'?'T→S':s.key;sbEl.innerHTML+='<div class="sb-item"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:13px;color:'+BAR_COLORS[s.key]+';">'+disp+'</div><div style="font-size:12px;margin-top:2px;">'+mk+'</div><div style="font-size:10px;color:#aaa;margin-top:1px;">'+s.pts+'/2</div></div>';});
+
+  if(state.streak>=2){const bs=document.getElementById('b-streak');bs.textContent=state.streak+'-response streak — keep it going!';bs.classList.add('visible');}
+
+  const gate=document.getElementById('g-gate');const nxt=document.getElementById('g-next');
+  if(!passed){
+    gate.classList.add('visible');
+    gate.textContent='You scored '+roundPts+'/'+MAX_PTS+' — you need '+pg+'/'+MAX_PTS+' to advance. Read the feedback, revise, and try again! (Attempt '+state.roundAttempts+')';
+    document.getElementById('b-retry').textContent='Attempt '+state.roundAttempts+' — not quite! Revise and shoot again.';
+    document.getElementById('b-retry').classList.add('visible');
+    nxt.style.display='none';document.getElementById('g-submit').disabled=false;
+  } else {
+    gate.classList.remove('visible');document.getElementById('b-retry').classList.remove('visible');
+    nxt.style.display='block';document.getElementById('g-submit').disabled=true;
+    nxt.textContent=state.currentRound>=4?'See final score':'Next passage';
+    nxt.onclick=state.currentRound>=4?showFinal:nextRound;
+  }
+
+  document.getElementById('g-results').classList.add('visible');
+  document.getElementById('g-results').scrollIntoView({behavior:'smooth',block:'nearest'});
+
+  // Save to Google Sheets
+  const syncEl=document.getElementById('sync-indicator');
+  syncEl.textContent='Saving to scoreboard...';
+  try{
+    await postRound({name:state.name,classId:state.classId,nickname:state.nickname,round:state.currentRound,score:roundPts,attempts:state.roundAttempts,theme:p.theme,...resp});
+    await fetchSheetData();
+    syncEl.textContent='✓ Saved to scoreboard!';
+  }catch(e){syncEl.textContent='Could not sync — will retry.';}
+}
+
 function nextRound(){state.currentRound++;if(state.currentRound<5)loadPassage();}
-function showFinal(){const s=students.find(x=>x.name===state.name&&x.classId===state.classId);const tot=s?s.rounds.reduce((a,r)=>a+r.score,0):state.totalScore;const maxTotal=MAX_PTS*5;const g=tot>=63?'A \u2014 MVP':tot>=52?'B \u2014 Starter':tot>=42?'C \u2014 Bench':'Needs Support';const col=tot>=63?'#1D9E75':tot>=52?'#378ADD':tot>=42?'#EF9F27':'#E24B4A';document.getElementById('game-screen').innerHTML='<div style="text-align:center;padding:3rem 1rem;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:2px;color:#aaa;margin-bottom:4px;">FINAL BUZZER</div><div style="font-size:13px;color:#666;margin-bottom:4px;">'+state.name+' \u00b7 '+state.nickname+' \u00b7 '+CLASSES[state.classId].label+'</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:72px;color:'+col+';line-height:1;">'+tot+'</div><div style="font-size:15px;color:#666;">out of '+maxTotal+' points</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:'+col+';margin:1rem 0;">'+g+'</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;"><button class="btn-s" onclick="go(\'lb-screen\');renderLB(\'all\');">Leaderboard</button><button class="btn-s" onclick="go(\'login-screen\')">Home</button></div></div>';}
-function getTotal(s){return s.rounds.reduce((a,r)=>a+r.score,0);}
-function setLBF(el){document.querySelectorAll('.lb-filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
-let lbTimer=null;
-function renderLB(filter){clearTimeout(lbTimer);const data=(filter==='all'?[...students]:students.filter(s=>s.classId===filter)).filter(s=>s.rounds.length>0).sort((a,b)=>getTotal(b)-getTotal(a));const list=document.getElementById('lb-list');if(!list)return;if(!data.length){list.innerHTML='<div class="lb-empty">No scores yet \u2014 be the first to shoot!</div>';return;}list.innerHTML='';const maxTotal=MAX_PTS*5;data.forEach((s,i)=>{const tot=getTotal(s);const pct=Math.round(tot/maxTotal*100);const medal=i===0?'\uD83E\uDD47':i===1?'\uD83E\uDD48':i===2?'\uD83E\uDD49':`${i+1}`;const cl=CLASSES[s.classId];const badgeCls=cl&&cl.honors?'badge-hon':'badge-std';list.innerHTML+='<div class="lb-row"><div style="font-size:'+(i<3?'22':'16')+'px;min-width:32px;text-align:center;">'+medal+'</div><div class="lb-nick">'+s.nickname+'<span class="lb-cbadge '+badgeCls+'">'+(cl?cl.label:'')+'</span></div><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:'+pct+'%"></div></div><div class="lb-score">'+tot+'/'+maxTotal+'</div></div>';});lbTimer=setTimeout(()=>renderLB(filter),8000);}
-function tvTab(id,el){document.querySelectorAll('.tv-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.tv-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tv-'+id).classList.add('active');}
-function cfBtns(af,fn){return '<div class="class-filter">'+['all','p1','p3','p4'].map(f=>'<button class="cf-btn'+(af===f?' active':'')+'" onclick="'+fn+'(\''+f+'\')">'+(f==='all'?'All':CLASSES[f]?CLASSES[f].label:f)+'</button>').join('')+'</div>';}
-function filterS(f){return f==='all'?students:students.filter(s=>s.classId===f);}
-function renderTeacher(){renderOverview('all');renderRoster('all');renderStruggles('all');renderResponses('all');}
-function renderOverview(f){const data=filterS(f);const tot=data.length;const maxT=MAX_PTS*5;const avg=tot?Math.round(data.reduce((a,s)=>a+getTotal(s),0)/tot):0;const pass=data.filter(s=>getTotal(s)>=(maxT*0.8)).length;document.getElementById('tv-overview').innerHTML=cfBtns(f,'renderOverview')+'<div class="tv-summary-grid"><div class="tv-metric"><div class="num">'+tot+'</div><div class="lbl-sm">Students</div></div><div class="tv-metric"><div class="num">'+avg+'</div><div class="lbl-sm">Avg / '+maxT+'</div></div><div class="tv-metric"><div class="num">'+pass+'</div><div class="lbl-sm">Scoring 80%+</div></div><div class="tv-metric"><div class="num">'+(tot?Math.round(pass/tot*100):0)+'%</div><div class="lbl-sm">Pass rate</div></div></div><div class="note-box"><strong style="color:#1a1a1a;">Scoring:</strong> Each round = '+MAX_PTS+' pts (2 per component: R, A, T\u2192C, C, E, T\u2192S, S). Total = '+maxT+' pts.<br><strong style="color:#1a1a1a;">Grading:</strong> 63\u201370 = A (MVP) \u00b7 52\u201362 = B (Starter) \u00b7 42\u201351 = C (Bench) \u00b7 below 42 = Needs Support<br><strong style="color:#1a1a1a;">Standard (P1 &amp; P4):</strong> 8/14 per round \u00a0|\u00a0 <strong style="color:#1a1a1a;">Honors (P3):</strong> 9/14 per round</div>';}
-function renderRoster(f){const data=filterS(f);const maxT=MAX_PTS*5;if(!data.length){document.getElementById('tv-roster').innerHTML=cfBtns(f,'renderRoster')+'<p style="color:#666;font-size:14px;">No students yet.</p>';return;}let h=cfBtns(f,'renderRoster')+'<table class="roster-table"><thead><tr><th>Name</th><th>Class</th><th>Nickname</th><th>Total</th><th>Grade</th>';for(let i=0;i<5;i++)h+='<th>R'+(i+1)+'</th>';h+='<th>Attempts</th></tr></thead><tbody>';data.forEach(s=>{const tot=getTotal(s);const pct=tot/maxT;const g=pct>=0.9?'A':pct>=0.74?'B':pct>=0.6?'C':'D';const cc=pct>=0.74?'sc-hi':pct>=0.6?'sc-mid':'sc-lo';const cl=CLASSES[s.classId];const isHon=cl&&cl.honors;h+='<tr><td style="font-weight:600;">'+s.name+'</td><td><span class="sc-chip '+(isHon?'sc-hi':'sc-mid')+'">'+(cl?cl.label:s.classId)+'</span></td><td style="color:#666;font-size:12px;">'+s.nickname+'</td><td>'+tot+'/'+maxT+'</td><td><span class="sc-chip '+cc+'">'+g+'</span></td>';for(let i=0;i<5;i++){const r=s.rounds.find(x=>x.round===i);h+='<td>'+(r?r.score+'/'+MAX_PTS:'\u2014')+'</td>';}h+='<td>'+s.rounds.reduce((a,r)=>a+(r.attempts||1),0)+'</td></tr>';});h+='</tbody></table>';document.getElementById('tv-roster').innerHTML=h;}
-function renderStruggles(f){const data=filterS(f);const totals={R:[],A:[],TC:[],C:[],E:[],TS:[],S:[]};data.forEach(s=>s.rounds.forEach(r=>{if(r.sbs)r.sbs.forEach(it=>{if(totals[it.key]!==undefined)totals[it.key].push(it.pts);});}));const labels={R:'R \u2014 Restate',A:'A \u2014 Answer',TC:'T\u2192C \u2014 Transition to cite',C:'C \u2014 Cite',E:'E \u2014 Explain',TS:'T\u2192S \u2014 Transition to summarize',S:'S \u2014 Summarize'};let h=cfBtns(f,'renderStruggles')+'<div>';['R','A','TC','C','E','TS','S'].forEach(k=>{const arr=totals[k];const avg=arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;const pct=Math.round(avg/2*100);h+='<div class="rbar-row"><div style="min-width:180px;font-size:12px;font-weight:600;color:'+BAR_COLORS[k]+';">'+labels[k]+'</div><div class="rbar-track"><div class="rbar-fill" style="width:'+pct+'%;background:'+BAR_COLORS[k]+';"></div></div><div class="rbar-pct">'+pct+'%</div></div>';});h+='</div>';const low=['R','A','TC','C','E','TS','S'].filter(k=>{const arr=totals[k];return arr.length&&arr.reduce((a,b)=>a+b,0)/arr.length<1.2;});if(low.length){h+='<div style="margin-top:1rem;"><div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">Components needing attention</div>';low.forEach(k=>{h+='<span class="strug-tag">'+labels[k]+'</span>';});h+='</div>';}document.getElementById('tv-struggles').innerHTML=h;}
-function renderResponses(f){const data=filterS(f);if(!data.length){document.getElementById('tv-responses').innerHTML=cfBtns(f,'renderResponses')+'<p style="color:#666;font-size:14px;">No responses yet.</p>';return;}const maxT=MAX_PTS*5;const keyLabels={R:'R',A:'A',TC:'T\u2192C',C:'C',E:'E (Says/Means/Matters)',TS:'T\u2192S',S:'S'};let h=cfBtns(f,'renderResponses');data.forEach(s=>{const tot=getTotal(s);const cl=CLASSES[s.classId];const isHon=cl&&cl.honors;h+='<div class="resp-card"><div class="resp-hdr" onclick="this.nextElementSibling.classList.toggle(\'open\');this.querySelector(\'.tog\').textContent=this.nextElementSibling.classList.contains(\'open\')?\'\u25b2 Hide\':\'\u25bc Show\';"><div style="font-weight:600;font-size:15px;">'+s.name+' <span class="sc-chip '+(isHon?'sc-hi':'sc-mid')+'" style="margin-left:4px;font-size:11px;">'+(cl?cl.label:s.classId)+'</span> \u2014 '+tot+'/'+maxT+'</div><span class="tog" style="font-size:13px;color:#aaa;">\u25bc Show</span></div><div class="resp-body">';s.rounds.forEach(r=>{h+='<div style="border-top:0.5px solid rgba(0,0,0,0.08);padding:10px 0 4px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:4px;">Round '+(r.round+1)+' \u2014 '+r.theme+' \u2014 '+r.score+'/'+MAX_PTS+' ('+(r.attempts||1)+' attempt'+((r.attempts||1)>1?'s':'')+')</div><div style="font-size:12px;color:#aaa;margin-bottom:6px;font-style:italic;">'+r.question+'</div>';['R','A','TC','C','E','TS','S'].forEach(k=>{const v=r.responses?r.responses[k]:'';if(v)h+='<div class="resp-item"><strong>'+keyLabels[k]+':</strong> '+v+'</div>';});h+='</div>';});h+='</div></div>';});document.getElementById('tv-responses').innerHTML=h;}
-function exportSummary(){const maxT=MAX_PTS*5;let txt='RACES CHECKER \u2014 TEACHER EXPORT\n'+new Date().toLocaleDateString()+'\n\n';txt+='Scoring: '+MAX_PTS+' pts/round (R,A,T\u2192C,C,E,T\u2192S,S = 2pts each). Total: '+maxT+' pts.\n';txt+='Scale: 63-70=A 52-62=B 42-51=C <42=Needs Support\nStandard gate: 8/14 | Honors gate: 9/14\n\n';students.forEach(s=>{const tot=getTotal(s);const cl=CLASSES[s.classId];txt+=(s.name).padEnd(26)+((cl?cl.label:s.classId)).padEnd(12)+(tot+'/'+maxT).padEnd(8)+'\n';s.rounds.forEach(r=>{txt+='  R'+(r.round+1)+' ('+r.theme+'): '+r.score+'/'+MAX_PTS+' \u2014 '+(r.attempts||1)+' attempt(s)\n';['R','A','TC','C','E','TS','S'].forEach(k=>{const v=r.responses?r.responses[k]:'';if(v)txt+='    '+k+': '+v+'\n';});});txt+='\n';});const b=new Blob([txt],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='races_export.txt';a.click();}
+
+function showFinal(){
+  const myRounds=sheetData.filter(r=>r.name===state.name&&r.classId===state.classId);
+  const tot=myRounds.length?myRounds.reduce((a,r)=>a+r.score,0):state.totalScore;
+  const maxTotal=MAX_PTS*5;
+  const g=tot>=63?'A — MVP':tot>=52?'B — Starter':tot>=42?'C — Bench':'Needs Support';
+  const col=tot>=63?'#1D9E75':tot>=52?'#378ADD':tot>=42?'#EF9F27':'#E24B4A';
+  document.getElementById('game-screen').innerHTML='<div style="text-align:center;padding:3rem 1rem;"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:2px;color:#aaa;margin-bottom:4px;">FINAL BUZZER</div><div style="font-size:13px;color:#666;margin-bottom:4px;">'+state.name+' · '+state.nickname+' · '+CLASSES[state.classId].label+'</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:72px;color:'+col+';line-height:1;">'+tot+'</div><div style="font-size:15px;color:#666;">out of '+maxTotal+' points</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:'+col+';margin:1rem 0;">'+g+'</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;"><button class="btn-s" onclick="go(\'lb-screen\');renderLB(\'all\');">Leaderboard</button><button class="btn-s" onclick="go(\'login-screen\')">Home</button></div></div>';
+}
+
+// LEADERBOARD — reads from Google Sheets
+function getStudentTotals(){
+  const map={};
+  sheetData.forEach(r=>{
+    const key=r.name+'|'+r.classId;
+    if(!map[key]){map[key]={name:r.name,classId:r.classId,nickname:r.nickname,total:0,rounds:[]};}
+    map[key].total+=r.score;
+    map[key].rounds.push(r);
+  });
+  return Object.values(map);
+}
+
+function setLBF(el){document.querySelectorAll('.lb-filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');lbFilter=el.textContent==='All'?'all':['Period 1','Period 3','Period 4'].includes(el.textContent)?['p1','p3','p4'][['Period 1','Period 3','Period 4'].indexOf(el.textContent)]:el.textContent;}
+
+async function renderLB(filter){
+  clearTimeout(lbTimer);
+  lbFilter=filter;
+  await fetchSheetData();
+  let data=getStudentTotals();
+  if(filter!=='all')data=data.filter(s=>s.classId===filter);
+  data.sort((a,b)=>b.total-a.total);
+  const list=document.getElementById('lb-list');if(!list)return;
+  const maxTotal=MAX_PTS*5;
+  if(!data.length){list.innerHTML='<div class="lb-empty">No scores yet — be the first to shoot!</div>';}
+  else{
+    list.innerHTML='';
+    data.forEach((s,i)=>{
+      const pct=Math.round(s.total/maxTotal*100);
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+      const cl=CLASSES[s.classId];
+      const badgeCls=cl&&cl.honors?'badge-hon':'badge-std';
+      list.innerHTML+='<div class="lb-row"><div style="font-size:'+(i<3?'22':'16')+'px;min-width:32px;text-align:center;">'+medal+'</div><div class="lb-nick">'+(s.nickname||s.name)+'<span class="lb-cbadge '+badgeCls+'">'+(cl?cl.label:'')+'</span></div><div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:'+pct+'%"></div></div><div class="lb-score">'+s.total+'/'+maxTotal+'</div></div>';
+    });
+  }
+  lbTimer=setTimeout(()=>renderLB(lbFilter),10000);
+}
+
+// TEACHER DASHBOARD — reads from Google Sheets
+async function refreshTeacher(){
+  document.getElementById('tv-sync-note').textContent='Loading data from Google Sheets...';
+  await fetchSheetData();
+  document.getElementById('tv-sync-note').textContent='✓ Live data — '+sheetData.length+' submissions from all devices. Last updated: '+new Date().toLocaleTimeString();
+  renderOverview(tvFilter);renderRoster(tvFilter);renderStruggles(tvFilter);renderResponses(tvFilter);
+}
+
+function tvTab(id,el){
+  document.querySelectorAll('.tv-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.tv-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tv-'+id).classList.add('active');
+}
+
+function cfBtns(af,fn){return '<div class="class-filter">'+['all','p1','p3','p4'].map(f=>'<button class="cf-btn'+(af===f?' active':'')+'" onclick="tvFilter=\''+f+'\';'+fn+'(\''+f+'\')">'+(f==='all'?'All':CLASSES[f]?CLASSES[f].label:f)+'</button>').join('')+'</div>';}
+
+function filterStudents(f){
+  const all=getStudentTotals();
+  return f==='all'?all:all.filter(s=>s.classId===f);
+}
+
+function renderOverview(f){
+  tvFilter=f;
+  const data=filterStudents(f);const tot=data.length;const maxT=MAX_PTS*5;
+  const avg=tot?Math.round(data.reduce((a,s)=>a+s.total,0)/tot):0;
+  const pass=data.filter(s=>s.total>=(maxT*0.8)).length;
+  document.getElementById('tv-overview').innerHTML=cfBtns(f,'renderOverview')+
+    '<div class="tv-summary-grid">'+
+    '<div class="tv-metric"><div class="num">'+tot+'</div><div class="lbl-sm">Students</div></div>'+
+    '<div class="tv-metric"><div class="num">'+avg+'</div><div class="lbl-sm">Avg / '+maxT+'</div></div>'+
+    '<div class="tv-metric"><div class="num">'+pass+'</div><div class="lbl-sm">Scoring 80%+</div></div>'+
+    '<div class="tv-metric"><div class="num">'+(tot?Math.round(pass/tot*100):0)+'%</div><div class="lbl-sm">Pass rate</div></div>'+
+    '</div>'+
+    '<div class="note-box"><strong style="color:#1a1a1a;">Scoring:</strong> '+MAX_PTS+' pts/round (R,A,T→C,C,E,T→S,S = 2pts each). Total = '+maxT+' pts.<br>'+
+    '<strong style="color:#1a1a1a;">Grading:</strong> 63–70 = A (MVP) · 52–62 = B (Starter) · 42–51 = C (Bench) · below 42 = Needs Support<br>'+
+    '<strong style="color:#1a1a1a;">Standard (P1 &amp; P4):</strong> 8/14 per round &nbsp;|&nbsp; <strong style="color:#1a1a1a;">Honors (P3):</strong> 9/14 per round</div>';
+}
+
+function renderRoster(f){
+  tvFilter=f;const data=filterStudents(f);const maxT=MAX_PTS*5;
+  if(!data.length){document.getElementById('tv-roster').innerHTML=cfBtns(f,'renderRoster')+'<p style="color:#666;font-size:14px;">No students yet.</p>';return;}
+  let h=cfBtns(f,'renderRoster')+'<table class="roster-table"><thead><tr><th>Name</th><th>Class</th><th>Nickname</th><th>Total</th><th>Grade</th>';
+  for(let i=0;i<5;i++)h+='<th>R'+(i+1)+'</th>';h+='<th>Submits</th></tr></thead><tbody>';
+  data.forEach(s=>{
+    const pct=s.total/maxT;const g=pct>=0.9?'A':pct>=0.74?'B':pct>=0.6?'C':'D';
+    const cc=pct>=0.74?'sc-hi':pct>=0.6?'sc-mid':'sc-lo';
+    const cl=CLASSES[s.classId];const isHon=cl&&cl.honors;
+    h+='<tr><td style="font-weight:600;">'+s.name+'</td><td><span class="sc-chip '+(isHon?'sc-hi':'sc-mid')+'">'+(cl?cl.label:s.classId)+'</span></td><td style="color:#666;font-size:12px;">'+(s.nickname||'—')+'</td><td>'+s.total+'/'+maxT+'</td><td><span class="sc-chip '+cc+'">'+g+'</span></td>';
+    for(let i=0;i<5;i++){const r=s.rounds.find(x=>x.round===i);h+='<td>'+(r?r.score+'/'+MAX_PTS:'—')+'</td>';}
+    h+='<td>'+s.rounds.length+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('tv-roster').innerHTML=h;
+}
+
+function renderStruggles(f){
+  tvFilter=f;const data=filterStudents(f);
+  const totals={R:[],A:[],TC:[],C:[],E:[],TS:[],S:[]};
+  const labels={R:'R — Restate',A:'A — Answer',TC:'T→C — Transition to cite',C:'C — Cite',E:'E — Explain',TS:'T→S — Transition to summarize',S:'S — Summarize'};
+  data.forEach(s=>s.rounds.forEach(r=>{
+    const row=sheetData.find(x=>x.name===s.name&&x.classId===s.classId&&x.round===r.round);
+    if(!row)return;
+  }));
+  // Score each response from sheet data
+  sheetData.filter(r=>f==='all'||r.classId===f).forEach(r=>{
+    const p=(CLASSES[r.classId]&&CLASSES[r.classId].honors?HON_PROMPTS:STD_PROMPTS)[r.round]||STD_PROMPTS[0];
+    const smm={says:'',means:'',matters:''};
+    const keys=['R','A','TC','C','E','TS','S'];
+    keys.forEach(k=>{
+      const v=r[k]||'';
+      const res=scoreKey(k,v,p.question,p.passage,smm);
+      if(totals[k])totals[k].push(res.pts);
+    });
+  });
+  let h=cfBtns(f,'renderStruggles')+'<div>';
+  ['R','A','TC','C','E','TS','S'].forEach(k=>{
+    const arr=totals[k];const avg=arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;
+    const pct=Math.round(avg/2*100);
+    h+='<div class="rbar-row"><div style="min-width:180px;font-size:12px;font-weight:600;color:'+BAR_COLORS[k]+';">'+labels[k]+'</div><div class="rbar-track"><div class="rbar-fill" style="width:'+pct+'%;background:'+BAR_COLORS[k]+';"></div></div><div class="rbar-pct">'+pct+'%</div></div>';
+  });
+  h+='</div>';
+  const low=['R','A','TC','C','E','TS','S'].filter(k=>{const arr=totals[k];return arr.length&&arr.reduce((a,b)=>a+b,0)/arr.length<1.2;});
+  if(low.length){h+='<div style="margin-top:1rem;"><div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">Components needing attention</div>';low.forEach(k=>{h+='<span class="strug-tag">'+labels[k]+'</span>';});h+='</div>';}
+  document.getElementById('tv-struggles').innerHTML=h;
+}
+
+function renderResponses(f){
+  tvFilter=f;const data=filterStudents(f);const maxT=MAX_PTS*5;
+  if(!data.length){document.getElementById('tv-responses').innerHTML=cfBtns(f,'renderResponses')+'<p style="color:#666;font-size:14px;">No responses yet.</p>';return;}
+  const keyLabels={R:'R',A:'A',TC:'T→C',C:'C',E:'E (Says/Means/Matters)',TS:'T→S',S:'S'};
+  let h=cfBtns(f,'renderResponses');
+  data.forEach(s=>{
+    const cl=CLASSES[s.classId];const isHon=cl&&cl.honors;
+    h+='<div class="resp-card"><div class="resp-hdr" onclick="this.nextElementSibling.classList.toggle(\'open\');this.querySelector(\'.tog\').textContent=this.nextElementSibling.classList.contains(\'open\')?\'\u25b2 Hide\':\'\u25bc Show\';"><div style="font-weight:600;font-size:15px;">'+s.name+' <span class="sc-chip '+(isHon?'sc-hi':'sc-mid')+'" style="margin-left:4px;font-size:11px;">'+(cl?cl.label:s.classId)+'</span> — '+s.total+'/'+maxT+'</div><span class="tog" style="font-size:13px;color:#aaa;">▼ Show</span></div><div class="resp-body">';
+    s.rounds.forEach(r=>{
+      h+='<div style="border-top:0.5px solid rgba(0,0,0,0.08);padding:10px 0 4px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:4px;">Round '+(r.round+1)+' — '+r.theme+' — '+r.score+'/'+MAX_PTS+' ('+r.attempts+' attempt'+(r.attempts>1?'s':'')+')</div>';
+      ['R','A','TC','C','E','TS','S'].forEach(k=>{const v=r[k]||'';if(v)h+='<div class="resp-item"><strong>'+keyLabels[k]+':</strong> '+v+'</div>';});
+      h+='</div>';
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('tv-responses').innerHTML=h;
+}
+
+function exportSummary(){
+  const maxT=MAX_PTS*5;let txt='RACES CHECKER — TEACHER EXPORT\n'+new Date().toLocaleDateString()+'\n\n';
+  txt+='Scoring: '+MAX_PTS+' pts/round. Total: '+maxT+' pts.\nScale: 63-70=A 52-62=B 42-51=C <42=Needs Support\n\n';
+  getStudentTotals().forEach(s=>{
+    const cl=CLASSES[s.classId];
+    txt+=(s.name||'').padEnd(26)+((cl?cl.label:s.classId)||'').padEnd(12)+(s.total+'/'+maxT).padEnd(8)+'\n';
+    s.rounds.forEach(r=>{
+      txt+='  R'+(r.round+1)+' ('+r.theme+'): '+r.score+'/'+MAX_PTS+' — '+r.attempts+' attempt(s)\n';
+      ['R','A','TC','C','E','TS','S'].forEach(k=>{const v=r[k]||'';if(v)txt+='    '+k+': '+v+'\n';});
+    });txt+='\n';
+  });
+  const b=new Blob([txt],{type:'text/plain'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='races_export.txt';a.click();
+}
+
+// Boot — pre-load sheet data
+fetchSheetData();
 </script>
 </body>
 </html>
